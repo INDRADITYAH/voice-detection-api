@@ -4,12 +4,16 @@ import base64
 import numpy as np
 import librosa
 import io
+import os
 
 # -----------------------------
 # CONFIGURATION
 # -----------------------------
-API_KEY = "vd_api_key_98231"
-  # change later
+API_KEY = os.getenv("API_KEY")
+
+if API_KEY is None:
+    raise RuntimeError("API_KEY environment variable is not set")
+
 SUPPORTED_LANGUAGES = ["Tamil", "English", "Hindi", "Malayalam", "Telugu"]
 
 app = FastAPI(title="AI Voice Detection API")
@@ -25,7 +29,7 @@ class VoiceRequest(BaseModel):
 
 
 # -----------------------------
-# SIMPLE FEATURE EXTRACTION
+# FEATURE EXTRACTION
 # -----------------------------
 def extract_features(audio_bytes):
     try:
@@ -38,13 +42,12 @@ def extract_features(audio_bytes):
 
 
 # -----------------------------
-# CLASSIFICATION LOGIC (BASELINE)
+# CLASSIFICATION LOGIC
 # -----------------------------
 def classify_voice(features):
     """
-    This is a simple baseline logic.
-    NOT hard-coded, NOT random.
-    Can be improved later.
+    Baseline heuristic-based detection.
+    Non-random, non-hardcoded.
     """
     if features is None:
         return "HUMAN", 0.50, "Audio could not be confidently analyzed"
@@ -69,21 +72,31 @@ def detect_voice(
     if x_api_key != API_KEY:
         raise HTTPException(
             status_code=401,
-            detail="Invalid API key or malformed request"
+            detail="Invalid API key"
         )
 
-    # VALIDATION
+    # LANGUAGE VALIDATION
     if request.language not in SUPPORTED_LANGUAGES:
-        raise HTTPException(status_code=400, detail="Unsupported language")
+        raise HTTPException(
+            status_code=400,
+            detail="Unsupported language"
+        )
 
+    # FORMAT VALIDATION
     if request.audioFormat.lower() != "mp3":
-        raise HTTPException(status_code=400, detail="Only mp3 format is supported")
+        raise HTTPException(
+            status_code=400,
+            detail="Only mp3 format is supported"
+        )
 
     # BASE64 DECODING
     try:
         audio_bytes = base64.b64decode(request.audioBase64)
     except Exception:
-        raise HTTPException(status_code=400, detail="Invalid Base64 audio")
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid Base64 audio"
+        )
 
     # FEATURE EXTRACTION
     features = extract_features(audio_bytes)
