@@ -16,7 +16,13 @@ if API_KEY is None:
 
 SUPPORTED_LANGUAGES = ["Tamil", "English", "Hindi", "Malayalam", "Telugu"]
 
-app = FastAPI(title="AI Voice Detection API")
+app = FastAPI(
+    title="AI Voice Detection API",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json"
+)
+
 
 
 # -----------------------------
