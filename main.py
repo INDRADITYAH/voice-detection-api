@@ -137,3 +137,9 @@ def detect_voice(
         "confidenceScore": round(confidence, 2),
         "explanation": explanation
     }
+@app.get("/__self_test")
+def self_test():
+    return {
+        "status": "ok",
+        "message": "API reachable and responding"
+    }
